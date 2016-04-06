@@ -53,6 +53,7 @@ app.use(cookieSession({
   name: 'session',
   keys: [process.env.SESSION_KEY]
 }));
+app.use(passport.session());
 
 app.use('/', routes);
 app.use('/users', users);
