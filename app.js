@@ -5,6 +5,7 @@ var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var LinkedInStrategy = require('passport-linkedin-oauth2').Strategy;
 var passport = require('passport');
+var cookieSession = require('cookie-session');
 
 var routes = require('./routes/index');
 var users = require('./routes/users');
@@ -22,6 +23,7 @@ passport.use(new LinkedInStrategy({
   clientSecret: process.env.LINKEDIN_CLIENT_SECRET,
   callbackURL: process.env.HOST + "/auth/linkedin/callback",
   scope: ['r_emailaddress', 'r_basicprofile'],
+  state: true
 }, function(accessToken, refreshToken, profile, done) {
   // asynchronous verification, for effect...
   process.nextTick(function () {
@@ -47,12 +49,15 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(passport.initialize());
+app.use(cookieSession({
+  name: 'session',
+  keys: [process.env.SESSION_KEY]
+}));
 
 app.use('/', routes);
 app.use('/users', users);
 
-app.get('/auth/linkedin',
-  passport.authenticate('linkedin', { state: 'SOME STATE'  }));
+app.get('/auth/linkedin', passport.authenticate('linkedin'));
 
 app.get('/auth/linkedin/callback', passport.authenticate('linkedin', {
   successRedirect: '/',
