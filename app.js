@@ -33,14 +33,31 @@ passport.use(new LinkedInStrategy({
   });
 }));
 
+passport.serializeUser(function(user, done) {
+  done(null, user);
+});
+
+passport.deserializeUser(function(user, done) {
+  done(null, user)
+});
+
 app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
+app.use(passport.initialize());
 
 app.use('/', routes);
 app.use('/users', users);
+
+app.get('/auth/linkedin',
+  passport.authenticate('linkedin', { state: 'SOME STATE'  }));
+
+app.get('/auth/linkedin/callback', passport.authenticate('linkedin', {
+  successRedirect: '/',
+  failureRedirect: '/login'
+}));
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
