@@ -33,7 +33,7 @@ passport.use(new LinkedInStrategy({
   scope: ['r_emailaddress', 'r_basicprofile'],
   state: true
 }, function(accessToken, refreshToken, profile, done) {
-  done(null, {id: profile.id, displayName: profile.displayName})
+  done(null, {id: profile.id, displayName: profile.displayName, token: accessToken })
 }));
 
 app.use(logger('dev'));
@@ -51,7 +51,7 @@ app.use(passport.session());
 app.use(function (req, res, next) {
   res.locals.user = req.user
   next()
-})
+});
 
 app.use('/', routes);
 app.use('/users', users);
@@ -62,6 +62,11 @@ app.get('/auth/linkedin/callback', passport.authenticate('linkedin', {
   successRedirect: '/',
   failureRedirect: '/login'
 }));
+
+app.get('/logout', function(req, res){
+  req.logout();
+  res.redirect('/');
+});
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
